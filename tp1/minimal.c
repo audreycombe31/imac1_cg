@@ -26,11 +26,14 @@ void projection(){
     gluOrtho2D(-1., 1., -1., 1.);
 
     /*Dessinons des points*/
-    /*fonctionne pas
+	glPointSize(10);
+   	glClear(GL_COLOR_BUFFER_BIT);
     glBegin(GL_POINTS);
-        glVertex2f(-1 + 2. * x / WINDOW_WIDTH, -(-1 + 2. *y / WINDOW_HEIGHT));
+		//glColor3f(1,0,0);
+        //glVertex2f(-200.0f, 200.0f);
+        glVertex2f(-1 + 2. * 200 / WINDOW_WIDTH, -(-1 + 2. *200 / WINDOW_HEIGHT));
     glEnd();
-    */
+    
 }
 
 int main(int argc, char** argv) {
