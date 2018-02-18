@@ -56,24 +56,6 @@ void projection(){
 }
 
 int main(int argc, char** argv) {
-	printf("je suis là\n");
-	PrimitiveList listePrim = NULL;
-	printf("je suis ici\n");
-
-	printf("coucou1\n");
-	Primitive *p = allocPrimitive(GL_POINTS);
-	printf("coucou2\n");
-	addPrimitive(p, &listePrim);
-	printf("coucou2\n");
-	printPrimitiveList(listePrim);
-	//deletePoints(&liste1);
-	//deletePrimitive(&listePrim);
-	
-	//printfPointList(liste1);
-	printf("coucou2");
-	printPrimitiveList(listePrim);
-	
-	
 
     /* Initialisation de la SDL */
     if(-1 == SDL_Init(SDL_INIT_VIDEO)) {
@@ -90,27 +72,32 @@ int main(int argc, char** argv) {
     /* Titre de la fenêtre */
     SDL_WM_SetCaption("First TD OpenGL YEAH", NULL);
     
-    
-   /*Coordonnees souris initialisation*/
-    float x=1.0;
-    float y=1.0;
-	
 	/*Nettoyage de la fenêtre*/
+	glClearColor(0.1, 0.1, 0.1, 1.0);
 	glClear(GL_COLOR_BUFFER_BIT);
+	
+	/*Création d'une primitive*/
+	PrimitiveList listePrim = NULL;
+	Primitive *p = allocPrimitive(GL_POINTS);
+
+	addPrimitive(p, &listePrim);
+	
 	
 	/* Boucle d'affichage */
 	 int loop = 1;
+	float x, y;
+	
     while(loop) {
 
         /* Récupération du temps au début de la boucle */
         Uint32 startTime = SDL_GetTicks();
         
         /* Placer ici le code de dessin */
-       // drawPoints(liste1);
+       glClear(GL_COLOR_BUFFER_BIT);
         
         
         /* Echange du front et du back buffer : mise à jour de la fenêtre */
-        SDL_GL_SwapBuffers();
+      //  SDL_GL_SwapBuffers();
         
         /* Boucle traitant les evenements */
         SDL_Event e;
@@ -120,45 +107,22 @@ int main(int argc, char** argv) {
             if(e.type == SDL_QUIT || (e.type == SDL_KEYDOWN && e.key.keysym.sym == 113)) {
                 loop = 0;
                 break;
-            }
-			
-			projection();
+			}
             
             /* Quelques exemples de traitement d'evenements : */
             switch(e.type) {
 
                 /* Clic souris */
-                case SDL_MOUSEBUTTONDOWN:
-					x=e.button.x;
-                    y=e.button.y;
-					Point* point = allocPoint(x,y,255,255,255);
+                case SDL_MOUSEBUTTONUP:
+					
+					x = -1 + 2. * e.button.x / WINDOW_WIDTH;
+                    y = -(-1 + 2. * e.button.y / WINDOW_HEIGHT);
+					/*Ajout du point à la liste de la primitive active*/
+					Point* point = allocPoint(x,y,1.0,1.0,1.0);
 					addPointToList(point, &listePrim->points);
-                    printf("clic en (%d, %d)\n", e.button.x, e.button.y);
-                    
-					/*Changer couleur fond
-                    glClear(GL_COLOR_BUFFER_BIT);
-                    glClearColor((x/WINDOW_WIDTH), (y/WINDOW_HEIGHT), 0, 1);
-					*/
-					/*dessinerForme(L);
-                    break;*/
+					break;                    
 					
-				/*case SDL_MOUSEBUTTONUP:
-                    printf("clic en (%d, %d)\n", e.button.x, e.button.y);
-                    x=e.button.x;
-                    y=e.button.y;*/
-					/*Changer couleur fond
-                    glClear(GL_COLOR_BUFFER_BIT);
-                    glClearColor((x/WINDOW_WIDTH), (y/WINDOW_HEIGHT), 0, 1);
-					*/
-					/*dessinerLigne(x, y);
-                    break;*/
-
-                /* Touche clavier 
-                case SDL_KEYDOWN:
-                    printf("touche pressée (code = %d)\n", e.key.keysym.sym);
-                    break;*/
-					break;
-					
+				/*Touche clavier*/
 				case SDL_KEYDOWN:
 					if(e.key.keysym.sym == SDLK_p){
 						addPrimitive(allocPrimitive(GL_POINTS), &listePrim);
@@ -254,7 +218,7 @@ void drawPoints(PointList list){
 	while(list != NULL){
 		
 		glColor3f(list->r,list->g,list->b);
-		glVertex2f(-1 + 2. * list->x / WINDOW_WIDTH, -(-1 + 2. * list->y / WINDOW_HEIGHT));
+		glVertex2f(list->x,list->y);
 		list = list->next;
 		
 	}
@@ -298,20 +262,14 @@ Primitive *allocPrimitive(GLenum primitiveType){
  *Paramètre : primitive à ajouter, liste
  */
 void addPrimitive(Primitive *primitive, PrimitiveList *list){
-	PrimitiveList tmp = *list;
 	printf("je suis là1\n");
 	
-	if ((*list) == NULL){
+	if ((*list) == NULL)
 		(*list) = primitive;
-		return;
-	}
+	
 	/*Parcours la liste*/
-	while (tmp->next != NULL)
-		tmp = tmp->next;
-		
-	/*Créer nouveau point, insère à la fin*/
-	printf("je suis là2\n");
-	tmp->next = primitive;	
+	else
+		addPrimitive(primitive, &(*liste)->next);	
 }
 
 /*Role : dessine une liste de primitves
@@ -330,22 +288,7 @@ void drawPrimitives(PrimitiveList list){
 /*Role : libère l'espace mémoire alloué à une primitive et à tous les points qu'elle contient
  *Paramètre : liste des points
  */
-void deletePrimitive(PrimitiveList *list){
-/*	PrimitiveList tmp = *list;
-	PrimitiveList ptmp;
-	
-	if(list == NULL)
-		return;
-
-	while(tmp->next != NULL){
-		ptmp = tmp->next;
-		deletePoints(&(tmp->points));
-		free(tmp);
-		tmp = ptmp;
-	}
-	free(tmp);
-	*/
-	
+void deletePrimitive(PrimitiveList *list){	
 	Primitive *tmp;
 	
 	while(*list){
