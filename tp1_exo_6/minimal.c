@@ -44,15 +44,11 @@ void printPrimitiveList(PrimitiveList list);
 void resize(int width, int height){
 	WINDOW_HEIGHT= height;
     WINDOW_WIDTH= width;
-	SDL_SetVideoMode(WINDOW_WIDTH, WINDOW_HEIGHT, BIT_PER_PIXEL, SDL_OPENGL | SDL_RESIZABLE);
-}
-
-void projection(){
-	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 0);
 	glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     gluOrtho2D(-1., 1., -1., 1.);
+	SDL_SetVideoMode(WINDOW_WIDTH, WINDOW_HEIGHT, BIT_PER_PIXEL, SDL_OPENGL | SDL_RESIZABLE);
 }
 
 int main(int argc, char** argv) {
@@ -76,29 +72,33 @@ int main(int argc, char** argv) {
 	glClearColor(0.1, 0.1, 0.1, 1.0);
 	glClear(GL_COLOR_BUFFER_BIT);
 	
+	
 	/*Création d'une primitive*/
-	PrimitiveList listePrim = NULL;
-	Primitive *p = allocPrimitive(GL_POINTS);
-
-	addPrimitive(p, &listePrim);
+	PrimitiveList primitives = NULL;
+	/*Définition d'une liste de prim comme pointeur sur la 1ere*/
+	Primitive *prim = allocPrimitive(GL_POINTS);
+	/*Pointeur sur la dernière primitive de la liste*/
+	PrimitiveList lastPrimitive = prim;
+	/*Ajouter la primitive à la liste*/
+	addPrimitive(prim, &primitives);
 	
 	
-	/* Boucle d'affichage */
-	 int loop = 1;
+	int loop = 1;
 	float x, y;
+	int newPrimitivePressed;
 	
+	GLenum currentPrimitiveType = GL_POINTS; /*Type de la primitive active*/
+
+	/* Boucle d'affichage */
     while(loop) {
 
         /* Récupération du temps au début de la boucle */
         Uint32 startTime = SDL_GetTicks();
         
         /* Placer ici le code de dessin */
-       glClear(GL_COLOR_BUFFER_BIT);
-        
-        
-        /* Echange du front et du back buffer : mise à jour de la fenêtre */
-      //  SDL_GL_SwapBuffers();
-        
+        glClear(GL_COLOR_BUFFER_BIT);
+		drawPrimitives(primitives);
+                
         /* Boucle traitant les evenements */
         SDL_Event e;
         while(SDL_PollEvent(&e)) {
@@ -110,49 +110,61 @@ int main(int argc, char** argv) {
 			}
             
             /* Quelques exemples de traitement d'evenements : */
-            switch(e.type) {
-
-                /* Clic souris */
-                case SDL_MOUSEBUTTONUP:
-					
-					x = -1 + 2. * e.button.x / WINDOW_WIDTH;
-                    y = -(-1 + 2. * e.button.y / WINDOW_HEIGHT);
-					/*Ajout du point à la liste de la primitive active*/
-					Point* point = allocPoint(x,y,1.0,1.0,1.0);
-					addPointToList(point, &listePrim->points);
-					break;                    
+            switch(e.type) {                 
 					
 				/*Touche clavier*/
 				case SDL_KEYDOWN:
+					newPrimitivePressed = 0;
+					GLenum newPrimitiveType;
+					
 					if(e.key.keysym.sym == SDLK_p){
-						addPrimitive(allocPrimitive(GL_POINTS), &listePrim);
-						printPrimitiveList(listePrim);
+						newPrimitivePressed = 1;
+						newPrimitiveType = GL_POINTS;
 					}
-						//dessinerForme(P);
 					
 					if(e.key.keysym.sym == SDLK_l){
-						addPrimitive(allocPrimitive(GL_LINES), &listePrim);
-						printPrimitiveList(listePrim);
+						newPrimitivePressed = 1;
+						newPrimitiveType = GL_LINES;
 					}
 					
 					if(e.key.keysym.sym == SDLK_t){
-						addPrimitive(allocPrimitive(GL_TRIANGLES), &listePrim);
-						printPrimitiveList(listePrim);
+						newPrimitivePressed = 1;
+						newPrimitiveType = GL_TRIANGLES;
 					}
-							
+					
+					if(e.key.keysym.sym == SDLK_c){
+						/*Effacer tout*/
+						deletePrimitive(&primitives); /*suppression des primitives actives*/
+						addPrimitive(allocPrimitive(currentPrimitiveType), &primitives);
+					}
+					
+					if(newPrimitivePressed != 0 && currentPrimitiveType != newPrimitiveType){
+						prim = allocPrimitive(newPrimitiveType);
+						lastPrimitive = prim;
+						addPrimitive(prim, &primitives);
+						currentPrimitiveType = newPrimitiveType;
+					}
 					break;
 
-                case SDL_VIDEORESIZE:
-                    
+                case SDL_VIDEORESIZE:                    
 					resize(e.resize.w, e.resize.h);
                     break;
+					
+				 /* Clic souris */
+                case SDL_MOUSEBUTTONUP:
+					x = -1 + 2. * e.button.x / WINDOW_WIDTH;
+                    y = -(-1 + 2. * e.button.y / WINDOW_HEIGHT);
+					/*Ajout du point à la liste de la primitive active*/
+					addPointToList(allocPoint(x, y, 1.0,1.0,1.0), &lastPrimitive->points);
+					break;   
 
                 default:
-                    break;
+                    break;		
             }
-
         }
-
+	    /* Echange du front et du back buffer : mise à jour de la fenêtre */
+        SDL_GL_SwapBuffers();
+		
         /* Calcul du temps écoulé */
         Uint32 elapsedTime = SDL_GetTicks() - startTime;
 
@@ -161,7 +173,7 @@ int main(int argc, char** argv) {
             SDL_Delay(FRAMERATE_MILLISECONDS - elapsedTime);
         }
     }
-
+	deletePrimitive(&primitives);
     /* Liberation des ressources associées à la SDL */ 
     SDL_Quit();
 
@@ -199,14 +211,14 @@ Point *allocPoint (float x, float y, unsigned char r, unsigned char g, unsigned 
  *Paramètre : point à ajouter
  */
 void addPointToList(Point *point, PointList *list){
-	PointList tmp = *list;
+	
+	if((*list) == NULL){	
+		(*list) = point;
+		return;
+	}
 		
-	/*Parcours la liste*/
-	while (tmp->next != NULL)
-		tmp = tmp->next;
-		
-	/*Créer nouveau point, insère à la fin*/
-	tmp->next = point;	
+	else
+		addPointToList(point, &(*list)->next);
 }
 
 /*Role : dessiner tous les points de la liste
@@ -216,7 +228,6 @@ void drawPoints(PointList list){
 	/*Dessiner points*/
 	
 	while(list != NULL){
-		
 		glColor3f(list->r,list->g,list->b);
 		glVertex2f(list->x,list->y);
 		list = list->next;
@@ -245,16 +256,16 @@ Primitive *allocPrimitive(GLenum primitiveType){
 	PrimitiveList tmp;
 	
 	tmp = (Primitive *)malloc(sizeof(Primitive));
-	printf("1\n");
+	
 	if(tmp == NULL){
 		printf("Erreur allocation\n");
 		exit(1);
 	}
-	printf("2\n");
+	
 	tmp->primitiveType = primitiveType;
 	tmp->points = NULL;
 	tmp->next = NULL;
-	printf("3\n");
+
 	return tmp;	
 }
 
@@ -262,14 +273,13 @@ Primitive *allocPrimitive(GLenum primitiveType){
  *Paramètre : primitive à ajouter, liste
  */
 void addPrimitive(Primitive *primitive, PrimitiveList *list){
-	printf("je suis là1\n");
 	
-	if ((*list) == NULL)
+	if((*list) == NULL){
 		(*list) = primitive;
-	
-	/*Parcours la liste*/
+		return;
+	}
 	else
-		addPrimitive(primitive, &(*liste)->next);	
+		addPrimitive(primitive, &(*list)->next);
 }
 
 /*Role : dessine une liste de primitves
@@ -277,7 +287,6 @@ void addPrimitive(Primitive *primitive, PrimitiveList *list){
  */
 void drawPrimitives(PrimitiveList list){
 	while (list != NULL){
-		glPointSize(5);
 		glBegin(list->primitiveType);
 		drawPoints(list->points);		
 		glEnd();

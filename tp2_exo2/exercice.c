@@ -115,10 +115,19 @@ void printfPointList(PointList list){
 }
 
 /*Dessiner un carré de cote 1 centré sur l'origine*/
-void drawSquare(){
-	glBegin(GL_QUADS);
+void drawSquare(float x, float y){
+	printf("coucou");
+	glPointSize(5);
+	glBegin(GL_POINTS);
+	glColor3f(1.0,1.0,1.0);
+	glVertex2f(x, y);
+	/*glVertex2f(-1 +2. * x+20 / WINDOW_WIDTH, -(-1 +2. * y+10 / WINDOW_HEIGHT));
+	glVertex2f(-1 +2. * x+20 / WINDOW_WIDTH, -(-1 +2. * y+20 / WINDOW_HEIGHT));
+	glVertex2f(-1 +2. * x / WINDOW_WIDTH, -(-1 +2. * y+20 / WINDOW_HEIGHT));*/
+			   
 	/*DESSINER QUADS*/
 	glEnd();
+	printf("SLT");
 	
 }
 
@@ -158,7 +167,7 @@ int main(int argc, char** argv) {
         
         /* Placer ici le code de dessin */
        glClear(GL_COLOR_BUFFER_BIT);
-	   drawPrimitives(primitives);	
+	  // drawPrimitives(primitives);	
         
         /* Echange du front et du back buffer : mise à jour de la fenêtre */
        SDL_GL_SwapBuffers();
@@ -179,15 +188,17 @@ int main(int argc, char** argv) {
 
                 /* Clic souris */
                 case SDL_MOUSEBUTTONUP:
-					
 					x = -1 + 2. * e.button.x / WINDOW_WIDTH;
                     y = -(-1 + 2. * e.button.y / WINDOW_HEIGHT);
 					/*Ajout du point à la liste de la primitive active*/
-					
+					printf("je suis la");
+					drawSquare(x, y);
+					printf("JE SUIS ICI\n");
 					break;                    
 					
 				/*Touche clavier*/
-				case SDL_KEYDOWN:		
+				case SDL_KEYDOWN:	
+					
 					break;
 
                 case SDL_VIDEORESIZE:
