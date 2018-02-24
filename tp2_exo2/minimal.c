@@ -3,6 +3,7 @@
 #include <GL/glu.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <math.h>
 
 /* Dimensions de la fenêtre */
 static unsigned int WINDOW_WIDTH = 400;
@@ -13,6 +14,11 @@ static const unsigned int BIT_PER_PIXEL = 32;
 
 /* Nombre minimal de millisecondes separant le rendu de deux images */
 static const Uint32 FRAMERATE_MILLISECONDS = 1000 / 60;
+
+/*Nombres de segments pour former cercle*/
+static const unsigned int NB_SEG_CIRCLE = 100;
+/*Valeur de PI*/
+static const float PI = 3.1415926535897932384626433832795;
 
 /*Structures*/
 typedef struct Point{
@@ -39,7 +45,9 @@ void drawPrimitives(PrimitiveList list);
 void deletePrimitive(PrimitiveList *list);
 void printfPointList(PointList list);
 void printPrimitiveList(PrimitiveList list);
-void drawColorPalette();
+void drawSquare();
+void drawLandmark();
+void drawCircle();
 
 
 void resize(int width, int height){
@@ -99,6 +107,9 @@ int main(int argc, char** argv) {
         /* Placer ici le code de dessin */
         glClear(GL_COLOR_BUFFER_BIT);
 		drawPrimitives(primitives);
+		drawSquare();
+		drawLandmark();
+		drawCircle();
                 
         /* Boucle traitant les evenements */
         SDL_Event e;
@@ -328,4 +339,44 @@ void printPrimitiveList(PrimitiveList list){
 		printf("Primitive (%d)\n", list->primitiveType);
 		list = list->next;
 	}	
+}
+
+/*Dessiner un carré de cote 1 centré sur l'origine*/
+void drawSquare(){
+	glBegin(GL_QUADS);
+	glColor3f(1.0,1.0,1.0);
+	glVertex2f(-0.5,0.5);
+	glVertex2f(0.5,0.5);
+	glVertex2f(0.5,-0.5);
+	glVertex2f(-0.5,-0.5);
+	glEnd();
+	
+}
+
+/*Dessiner un repère*/
+void drawLandmark(){
+	glBegin(GL_LINES);
+	glColor3f(1.0,0.,0.);
+	glVertex2f(-1, 0.);
+	glVertex2f(1,0.);
+	glColor3f(0.,1.,0.);
+	glVertex2f(0.,1);
+	glVertex2f(0.,-1);
+	glEnd();
+}
+
+/*Dessiner cercle de diamètre 1 centré sur origine*/
+void drawCircle(){
+	float angle;
+	int i;
+	angle = 2*PI/NB_SEG_CIRCLE;
+
+	glBegin(GL_LINE_STRIP); /*pour remplir, remplacer par GL_POLYGON*/
+	glColor3f(1.0,0.,0.);
+
+	for(i=0; i <= NB_SEG_CIRCLE; i++){
+		glVertex2f(cos(angle*i),sin(angle*i));
+	}
+
+	glEnd();
 }
