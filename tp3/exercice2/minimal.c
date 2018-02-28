@@ -163,6 +163,18 @@ void drawThirdArm(){
 	glEnd();
 }
 
+void drawFullArm(int alpha, int beta, int gamma){
+	drawSecondArm();
+	
+	glPushMatrix();
+		glRotatef(alpha, 0., 0., 1.);
+		drawFirstArm();
+	glPopMatrix();
+	
+	drawThirdArm();
+}
+
+
 void resize(){
 	glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
     glMatrixMode(GL_PROJECTION);
@@ -218,8 +230,8 @@ int main(int argc, char** argv) {
         //drawRoundedSquare();
 		//drawFirstArm();
 		//drawSecondArm();
-        drawThirdArm();  
-		
+       // drawThirdArm();  
+		drawFullArm(45,0,0);
         /* Boucle traitant les evenements */
         SDL_Event e;
         while(SDL_PollEvent(&e)) {
