@@ -119,7 +119,28 @@ void drawFirstArm(){
 		glVertex2f(0.,-1.);
 		glVertex2f(3,-0.5);
 	glEnd();
+}
 
+GLuint createFirstArmIDList(){
+	GLuint id = glGenLists(3);
+
+	glNewList(id, GL_COMPILE);
+		drawCircle(1.,1.,1.);	
+		glPushMatrix();
+			glTranslatef(3,0.,0.);
+			glScalef(0.5,0.5,0);
+			drawCircle(1.,1.,1.);
+		glPopMatrix();
+
+		glBegin(GL_LINES);
+			glVertex2f(0,1.);
+			glVertex2f(3,0.5);
+			glVertex2f(0.,-1.);
+			glVertex2f(3,-0.5);
+		glEnd();
+	glEndList();
+
+	return id;
 }
 
 void drawSecondArm(){
@@ -139,6 +160,31 @@ void drawSecondArm(){
 		glVertex2f(2.45, -0.15);
 		glVertex2f(-0.15,-0.15);
 	glEnd();
+}
+
+GLuint createSecondArmIDList(){
+	GLuint id = glGenLists(3);
+
+	glNewList(id, GL_COMPILE);
+		glColor3f(1.,0.,0.);
+		glPushMatrix();
+			glScalef(0.5, 0.5 ,0);
+			drawRoundedSquare();
+		glPopMatrix();
+		glPushMatrix();
+			glTranslatef(2.3, 0., 0.);
+			glScalef(0.5, 0.5 ,0);
+			drawRoundedSquare();
+		glPopMatrix();
+		glBegin(GL_QUADS);
+			glVertex2f(-0.15,0.15);
+			glVertex2f(2.45,0.15);
+			glVertex2f(2.45, -0.15);
+			glVertex2f(-0.15,-0.15);
+		glEnd();
+	glEndList();
+
+	return id;
 }
 
 void drawThirdArm(){
@@ -161,47 +207,32 @@ void drawThirdArm(){
 	glEnd();
 }
 
-void drawFullArm(int alpha, int beta, int gamma){
-	glPushMatrix();
-		glColor3f(1.,1.,1.);
-		glRotatef(alpha, 0., 0., 1.);
-		drawFirstArm();
+GLuint createThirdArmIDList(){
+	GLuint id = glGenLists(3);
 
+	glNewList(id, GL_COMPILE);
+		glColor3f(0.,0.,1.);
 		glPushMatrix();
-			glTranslatef(3.,0.,0.);
-			glRotatef(beta, 0., 0., 1.);
-			drawSecondArm();
-			glPushMatrix();
-				glTranslatef(2.3,0.,0.);
-				glColor3f(1.,1.,1.);
-				glPushMatrix();
-					glRotatef(gamma+80, 0., 0., 1.);
-					drawThirdArm();					
-				glPopMatrix();
-
-				glPushMatrix();
-					glRotatef(gamma+120, 0., 0., 1.);
-					drawThirdArm();					
-				glPopMatrix();
-				glPushMatrix();
-					glRotatef(gamma+210, 0., 0., 1.);
-					drawThirdArm();					
-				glPopMatrix();
-				glPushMatrix();
-					glRotatef(gamma+280, 0., 0., 1.);
-					drawThirdArm();					
-				glPopMatrix();
-				glPushMatrix();
-					glRotatef(gamma+340, 0., 0., 1.);
-					drawThirdArm();					
-				glPopMatrix();
-
-				
-			glPopMatrix();
+			glScalef(0.3, 0.3 ,0);	
+			drawRoundedSquare();
 		glPopMatrix();
-		
-	glPopMatrix();
+		glPushMatrix();
+			glTranslatef(1.9, 0., 0.);
+			glScalef(0.2, 0.2 ,0);		
+			drawCircle();
+		glPopMatrix();
+
+		glBegin(GL_QUADS);
+			glVertex2f(-0.1,0.1);
+			glVertex2f(1.9,0.1);
+			glVertex2f(1.9, -0.1);
+			glVertex2f(-0.1,-0.1);
+		glEnd();
+	glEndList();
+
+	return id;
 }
+
 
 
 void resize(){
@@ -238,6 +269,9 @@ int main(int argc, char** argv) {
 	int gamma = 35;
 	int beta = -45;
 	int alpha = 45;
+	GLuint id1 = createFirstArmIDList();
+	GLuint id2 = createSecondArmIDList();
+	GLuint id3 = createThirdArmIDList();
 
 	glMatrixMode(GL_MODELVIEW);
 
@@ -249,11 +283,52 @@ int main(int argc, char** argv) {
         
         /* Placer ici le code de dessin */
        glClear(GL_COLOR_BUFFER_BIT);
-        //drawRoundedSquare();
+       
+       glPushMatrix();
+		glColor3f(1.,1.,1.);
+		glRotatef(alpha, 0., 0., 1.);
 		//drawFirstArm();
-		//drawSecondArm();
-       //drawThirdArm();  
-		drawFullArm(alpha,beta,gamma);
+		glCallList(id1);
+		glPushMatrix();
+			glTranslatef(3.,0.,0.);
+			glRotatef(beta, 0., 0., 1.);
+			//drawSecondArm();
+			glCallList(id2);
+			glPushMatrix();
+				glTranslatef(2.3,0.,0.);
+				glColor3f(1.,1.,1.);
+				glPushMatrix();
+					glRotatef(gamma+80, 0., 0., 1.);
+					//drawThirdArm();	
+					glCallList(id3);			
+				glPopMatrix();
+
+				glPushMatrix();
+					glRotatef(gamma+120, 0., 0., 1.);
+					//drawThirdArm();	
+					glCallList(id3);						
+				glPopMatrix();
+				glPushMatrix();
+					glRotatef(gamma+210, 0., 0., 1.);
+					//drawThirdArm();	
+					glCallList(id3);						
+				glPopMatrix();
+				glPushMatrix();
+					glRotatef(gamma+280, 0., 0., 1.);
+					//drawThirdArm();	
+					glCallList(id3);				
+				glPopMatrix();
+				glPushMatrix();
+					glRotatef(gamma+340, 0., 0., 1.);
+					//drawThirdArm();	
+					glCallList(id3);				
+				glPopMatrix();
+
+				
+			glPopMatrix();
+		glPopMatrix();
+		
+	glPopMatrix();
 		alpha++;
 		beta = beta+1;
 		gamma = gamma+1;
