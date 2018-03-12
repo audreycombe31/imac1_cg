@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
+#include <string.h>
 
 static unsigned int WINDOW_WIDTH = 800;
 static unsigned int WINDOW_HEIGHT = 800;
@@ -15,12 +16,69 @@ void resizeViewport() {
     glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    gluOrtho2D(-1., 1., -1., 1.);
+    gluOrtho2D(-5., 5., -5., 5.);
     SDL_SetVideoMode(WINDOW_WIDTH, WINDOW_HEIGHT, BIT_PER_PIXEL, SDL_OPENGL | SDL_RESIZABLE);
 }
 
-const char* filename = "logo_imac_400x400.jpg";
+GLuint creerImage(char *name){
+	//Chargement et traitement de la texture
+	SDL_Surface *nb;
+	nb = IMG_Load(name);
+	
+	if(nb == NULL)
+		printf("erreur avec l'image\n");
+	
+	GLuint textureID;
+	glGenTextures(1, &textureID);
+	
+	glBindTexture(GL_TEXTURE_2D, textureID);
+	
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexImage2D(
+		GL_TEXTURE_2D,
+		0,
+		GL_RGBA,
+		nb->w,
+		nb->h,
+		0,
+		GL_RGBA,
+		GL_UNSIGNED_BYTE,
+		nb->pixels
+	);
+	
+	glBindTexture(GL_TEXTURE_2D, 0);
+	
+	SDL_FreeSurface(nb);
+	
+	return textureID;
+}
 
+void afficherHeures(GLuint textureID[]){
+	glBindTexture(GL_TEXTURE_2D, textureID[0]);//On bind la texture pour pouvoir l'utiliser	
+	glBegin(GL_QUADS);
+		glTexCoord2f(0,0);
+		glVertex2f(-4,1);
+		glTexCoord2f(1,0);
+		glVertex2f(-3,1);
+		glTexCoord2f(1,1);
+		glVertex2f(-3,-1);
+		glTexCoord2f(0,1);
+		glVertex2f(-4,-1);
+	glEnd();
+	
+	glBindTexture(GL_TEXTURE_2D, textureID[1]);//On bind la texture pour pouvoir l'utiliser	
+	glBegin(GL_QUADS);
+		glTexCoord2f(0,0);
+		glVertex2f(-3,1);
+		glTexCoord2f(1,0);
+		glVertex2f(-2,1);
+		glTexCoord2f(1,1);
+		glVertex2f(-2,-1);
+		glTexCoord2f(0,1);
+		glVertex2f(-3,-1);
+	glEnd();
+
+}
 int main(int argc, char** argv) {
 
     // Initialisation de la SDL
@@ -42,74 +100,22 @@ int main(int argc, char** argv) {
 	int seconde = instant.tm_sec;
 	int minute = instant.tm_min;
 	int hour = instant.tm_hour;
+	int i;
+	time_t min;
+	time_t sec;
+	min = time(NULL);
+	sec = time(NULL);
 	
-
-    // TODO: Chargement et traitement de la texture
-	SDL_Surface *nb_0;
-	SDL_Surface *nb_1;
-	SDL_Surface *nb_2;
-	SDL_Surface *nb_3;
-	SDL_Surface *nb_4;
-	SDL_Surface *nb_5;
-	SDL_Surface *nb_6;
-	SDL_Surface *nb_7;
-	SDL_Surface *nb_8;
-	SDL_Surface *nb_9;
-	SDL_Surface *nb_colon;
-
-	
-	nb_0 = IMG_Load("numbers/0.png");
-	nb_1 = IMG_Load("numbers/1.png");
-	nb_2 = IMG_Load("numbers/2.png");
-	nb_3 = IMG_Load("numbers/3.png");
-	nb_4 = IMG_Load("numbers/4.png");
-	nb_5 = IMG_Load("numbers/5.png");
-	nb_6 = IMG_Load("numbers/6.png");
-	nb_7 = IMG_Load("numbers/7.png");
-	nb_8 = IMG_Load("numbers/8.png");
-	nb_9 = IMG_Load("numbers/9.png");
-	nb_colon = IMG_Load("numbers/colon.png");
-	
-	if(nb_0 == NULL || nb_1 == NULL || nb_2 == NULL || nb_3 == NULL || nb_4 == NULL || nb_5 == NULL || nb_6 == NULL || nb_7 == NULL || nb_8 == NULL || nb_9 == NULL || nb_colon == NULL)
-		printf("erreur avec l'image\n");
 	
 	//Création de la texture
-	GLuint textureID;
-	glGenTextures(10, &textureID);
+	GLuint textureID[11];
 	
-	//Attacher texxture à un point de bind
-	glBindTexture(GL_TEXTURE_2D, textureID);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	
-	//Chargement des données sur la carte graphique
-	glTexImage2D(
-		GL_TEXTURE_2D,
-		0,
-		GL_RGB,
-		nb_0->w,
-		nb_0->h,
-		0,
-		GL_RGB,
-		GL_UNSIGNED_BYTE,
-		nb_0->pixels
-	);
-	
-	//Détacher la texture de son point de bind
-	glBindTexture(GL_TEXTURE_2D, 0);
-	printf("%d\n", textureID);
-    // TODO: Libération des données CPU
-	SDL_FreeSurface(nb_0);
-	SDL_FreeSurface(nb_1);
-	SDL_FreeSurface(nb_2);
-	SDL_FreeSurface(nb_3);
-	SDL_FreeSurface(nb_4);
-	SDL_FreeSurface(nb_5);
-	SDL_FreeSurface(nb_6);
-	SDL_FreeSurface(nb_7);
-	SDL_FreeSurface(nb_8);
-	SDL_FreeSurface(nb_9);
-	SDL_FreeSurface(nb_colon);
-	
+	for(i=0; i<10; i++){
+		char idx[100];
+		sprintf(idx, "numbers/%d.png", i);
+		textureID[i] = creerImage(idx);
+	}
+	textureID[10] = creerImage("numbers/colon.png");
 
     // Boucle de dessin (à décommenter pour l'exercice 3)
     int loop = 1;
@@ -121,9 +127,9 @@ int main(int argc, char** argv) {
         // TODO: Code de dessin
 		glClear(GL_COLOR_BUFFER_BIT);
 		glEnable(GL_TEXTURE_2D); //on précise qu'on veut activer la fonctionnalité de texturing
-       	glBindTexture(GL_TEXTURE_2D, textureID);//On bind la texture pour pouvoir l'utiliser
+	/*	for(int i=0; i<=10; i++)
+       		glBindTexture(GL_TEXTURE_2D, textureID[i]);//On bind la texture pour pouvoir l'utiliser
 		
-	
         glBegin(GL_QUADS);
 			glTexCoord2f(0,0);
 			glVertex2f(-0.5,0.5);
@@ -133,8 +139,11 @@ int main(int argc, char** argv) {
 			glVertex2f(0.5,-0.5);
 			glTexCoord2f(0,1);
 			glVertex2f(-0.5,-0.5);
-		glEnd();	
-	
+		glEnd();	*/
+		afficherHeures(textureID);
+		printf("h : %ld m %d s %d\n", sec, min/3600, seconde);
+		
+		
 		glDisable(GL_TEXTURE_2D); //on désactive la fonctionnalité de texturing
        	glBindTexture(GL_TEXTURE_2D, 0);//On débind la texture pour pouvoir l'utiliser
 		
@@ -167,11 +176,12 @@ int main(int argc, char** argv) {
         }
     }
 
-    // TODO: Libération des données GPU
-    glDeleteTextures(1, &textureID);
+    // Libération des données GPU
+    glDeleteTextures(10, textureID);
 
     // Liberation des ressources associées à la SDL
     SDL_Quit();
 
     return EXIT_SUCCESS;
 }
+
