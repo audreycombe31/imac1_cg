@@ -53,8 +53,8 @@ GLuint creerImage(char *name){
 	return textureID;
 }
 
-void afficherHeures(GLuint textureID[]){
-	glBindTexture(GL_TEXTURE_2D, textureID[0]);//On bind la texture pour pouvoir l'utiliser	
+void afficherHeures(GLuint textureID[], int hourUnite, int hourDizaine){
+	glBindTexture(GL_TEXTURE_2D, textureID[hourDizaine]);//On bind la texture pour pouvoir l'utiliser	
 	glBegin(GL_QUADS);
 		glTexCoord2f(0,0);
 		glVertex2f(-4,1);
@@ -66,7 +66,7 @@ void afficherHeures(GLuint textureID[]){
 		glVertex2f(-4,-1);
 	glEnd();
 	
-	glBindTexture(GL_TEXTURE_2D, textureID[1]);//On bind la texture pour pouvoir l'utiliser	
+	glBindTexture(GL_TEXTURE_2D, textureID[hourUnite]);//On bind la texture pour pouvoir l'utiliser	
 	glBegin(GL_QUADS);
 		glTexCoord2f(0,0);
 		glVertex2f(-3,1);
@@ -77,8 +77,86 @@ void afficherHeures(GLuint textureID[]){
 		glTexCoord2f(0,1);
 		glVertex2f(-3,-1);
 	glEnd();
-
 }
+
+void afficherMinutes(GLuint textureID[], int minuteUnite, int minuteDizaine){
+	glBindTexture(GL_TEXTURE_2D, textureID[minuteDizaine]);//On bind la texture pour pouvoir l'utiliser	
+	glBegin(GL_QUADS);
+		glTexCoord2f(0,0);
+		glVertex2f(-1,1);
+		glTexCoord2f(1,0);
+		glVertex2f(0,1);
+		glTexCoord2f(1,1);
+		glVertex2f(0,-1);
+		glTexCoord2f(0,1);
+		glVertex2f(-1,-1);
+	glEnd();
+	
+	glBindTexture(GL_TEXTURE_2D, textureID[minuteUnite]);//On bind la texture pour pouvoir l'utiliser	
+	glBegin(GL_QUADS);
+		glTexCoord2f(0,0);
+		glVertex2f(0,1);
+		glTexCoord2f(1,0);
+		glVertex2f(1,1);
+		glTexCoord2f(1,1);
+		glVertex2f(1,-1);
+		glTexCoord2f(0,1);
+		glVertex2f(0,-1);
+	glEnd();
+}
+
+void afficherSecondes(GLuint textureID[], int secondUnite, int secondDizaine){
+	glBindTexture(GL_TEXTURE_2D, textureID[secondDizaine]);//On bind la texture pour pouvoir l'utiliser	
+	glBegin(GL_QUADS);
+		glTexCoord2f(0,0);
+		glVertex2f(2,1);
+		glTexCoord2f(1,0);
+		glVertex2f(3,1);
+		glTexCoord2f(1,1);
+		glVertex2f(3,-1);
+		glTexCoord2f(0,1);
+		glVertex2f(2,-1);
+	glEnd();
+	
+	glBindTexture(GL_TEXTURE_2D, textureID[secondUnite]);//On bind la texture pour pouvoir l'utiliser	
+	glBegin(GL_QUADS);
+		glTexCoord2f(0,0);
+		glVertex2f(3,1);
+		glTexCoord2f(1,0);
+		glVertex2f(4,1);
+		glTexCoord2f(1,1);
+		glVertex2f(4,-1);
+		glTexCoord2f(0,1);
+		glVertex2f(3,-1);
+	glEnd();
+}
+
+void afficherColon(GLuint textureID[]){
+	glBindTexture(GL_TEXTURE_2D, textureID[10]);//On bind la texture pour pouvoir l'utiliser	
+	glBegin(GL_QUADS);
+		glTexCoord2f(0,0);
+		glVertex2f(-2,1);
+		glTexCoord2f(1,0);
+		glVertex2f(-1,1);
+		glTexCoord2f(1,1);
+		glVertex2f(-1,-1);
+		glTexCoord2f(0,1);
+		glVertex2f(-2,-1);
+	glEnd();
+	
+	glBindTexture(GL_TEXTURE_2D, textureID[10]);//On bind la texture pour pouvoir l'utiliser	
+	glBegin(GL_QUADS);
+		glTexCoord2f(0,0);
+		glVertex2f(1,1);
+		glTexCoord2f(1,0);
+		glVertex2f(2,1);
+		glTexCoord2f(1,1);
+		glVertex2f(2,-1);
+		glTexCoord2f(0,1);
+		glVertex2f(1,-1);
+	glEnd();
+}
+
 int main(int argc, char** argv) {
 
     // Initialisation de la SDL
@@ -95,17 +173,7 @@ int main(int argc, char** argv) {
     SDL_WM_SetCaption("td04", NULL);
     resizeViewport();
 	
-	//Récupération du temps
-	struct tm instant;
-	int seconde = instant.tm_sec;
-	int minute = instant.tm_min;
-	int hour = instant.tm_hour;
 	int i;
-	time_t min;
-	time_t sec;
-	min = time(NULL);
-	sec = time(NULL);
-	
 	
 	//Création de la texture
 	GLuint textureID[11];
@@ -119,29 +187,42 @@ int main(int argc, char** argv) {
 
     // Boucle de dessin (à décommenter pour l'exercice 3)
     int loop = 1;
+	
+	
     glClearColor(0.1, 0.1, 0.1 ,1.0);
     while(loop) {
 
         Uint32 startTime = SDL_GetTicks();
+		
+		//Récupération du temps
+		time_t rawtime;
+		struct tm *timeinfo;
+		time(&rawtime);
+		timeinfo = localtime(&rawtime);
 
+		int hourUnite = (timeinfo->tm_hour)%10;
+		int hourDizaine = (timeinfo->tm_hour)/10;
+
+		int minuteUnite = (timeinfo->tm_min)%10;
+		int minuteDizaine = (timeinfo->tm_min)/10;
+
+		int secondUnite = (timeinfo->tm_sec)%10;
+		int secondDizaine = (timeinfo->tm_sec)/10;	
+
+		printf("h : %d%d, min %d%d, sec %d%d\n", hourUnite, hourDizaine, minuteUnite, minuteDizaine, secondUnite, secondDizaine);
+		
+		
         // TODO: Code de dessin
 		glClear(GL_COLOR_BUFFER_BIT);
 		glEnable(GL_TEXTURE_2D); //on précise qu'on veut activer la fonctionnalité de texturing
-	/*	for(int i=0; i<=10; i++)
-       		glBindTexture(GL_TEXTURE_2D, textureID[i]);//On bind la texture pour pouvoir l'utiliser
 		
-        glBegin(GL_QUADS);
-			glTexCoord2f(0,0);
-			glVertex2f(-0.5,0.5);
-			glTexCoord2f(1,0);
-			glVertex2f(0.5,0.5);
-			glTexCoord2f(1,1);
-			glVertex2f(0.5,-0.5);
-			glTexCoord2f(0,1);
-			glVertex2f(-0.5,-0.5);
-		glEnd();	*/
-		afficherHeures(textureID);
-		printf("h : %ld m %d s %d\n", sec, min/3600, seconde);
+		afficherHeures(textureID, hourUnite, hourDizaine);
+		afficherMinutes(textureID, minuteUnite, minuteDizaine);
+		afficherSecondes(textureID, secondUnite, secondDizaine);
+		afficherColon(textureID);
+		
+		
+		//printf("h : %ld m %d s %d\n", sec, min/3600, seconde);
 		
 		
 		glDisable(GL_TEXTURE_2D); //on désactive la fonctionnalité de texturing
