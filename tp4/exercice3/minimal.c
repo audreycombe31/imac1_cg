@@ -46,7 +46,7 @@ int main(int argc, char** argv) {
 	GLuint textureID;
 	glGenTextures(1, &textureID);
 	
-	//Attacher texxture à un point de bind
+	//Attacher texture à un point de bind
 	glBindTexture(GL_TEXTURE_2D, textureID);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	

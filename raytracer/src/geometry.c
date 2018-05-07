@@ -1,4 +1,6 @@
+#include <stdio.h>
 #include "../include/geometry.h"
+
 
 /*Fonctions*/
 
@@ -91,7 +93,12 @@ Vector3D normalize(Vector3D A){
 	Vector3D vector;
 	float normeA = norm(A);
 	
-	vectorXYZ(A.x / normeA, A.y / normeA, A.z / normeA);
+	if(normeA == 0){
+		printf("Erreur, division par 0 impossible, la normalisation n'a pas été effectuée\n");
+		return A;
+	}
+	
+	vector = vectorXYZ(A.x / normeA, A.y / normeA, A.z / normeA);
 	
 	return vector;
 }
